@@ -331,6 +331,40 @@ public class PathResolverTest extends TestCase {
     assertTrue(listFiles.get(0).getPatches().get(0).getFilePath().replace(File.separatorChar, '/').endsWith(
       "code/patch.js"));
   }
+  
+  public void testParseConfigFileAndHaveListOfFilesOrdered()
+      throws Exception {         
+    File codeDir = createTmpSubDir("code", tmpDirs.iterator().next());
+    File subCodeDir = createTmpSubDir("code/subDir", tmpDirs.iterator().next());
+    File testDir = createTmpSubDir("test", tmpDirs.iterator().next());
+    createTmpFile(codeDir, "Core.js");
+    createTmpFile(codeDir, "Toto.js");
+    createTmpFile(codeDir, "Module.js");
+    createTmpFile(subCodeDir, "Toto.js");
+
+    String configFile = "load:\n" + 
+        "- code/Core.js\n" + 
+        "- code/Toto.js\n" + 
+        "- code/Module.js\n" + 
+        "- code/subDir/Toto.js";
+        
+        System.out.println("#409");
+        
+    ByteArrayInputStream bais = new ByteArrayInputStream(configFile.getBytes());
+    ConfigurationParser parser = new YamlParser();
+
+    Configuration config = parser.parse(new InputStreamReader(bais), null);
+        // Following line cause #409
+        .resolvePaths(new PathResolver(tmpDirs, Collections.<FileParsePostProcessor> emptySet(), new DisplayPathSanitizer()), createFlags());
+    Set<FileInfo> files = config.getFilesList();
+    List<FileInfo> listFiles = new ArrayList<FileInfo>(files);
+
+    assertEquals(4, files.size());
+    assertTrue(listFiles.get(0).getFilePath().replace(File.separatorChar, '/').endsWith("code/Core.js"));
+    assertTrue(listFiles.get(1).getFilePath().replace(File.separatorChar, '/').endsWith("ode/Toto.js"));
+    assertTrue(listFiles.get(2).getFilePath().replace(File.separatorChar, '/').endsWith("code/Module.js"));
+    assertTrue(listFiles.get(3).getFilePath().replace(File.separatorChar, '/').endsWith("code/subDir/Toto.js"));
+  }
 
   public void testParseConfigFileAndHaveListOfFilesWithUnassociatedPatch()
       throws Exception {

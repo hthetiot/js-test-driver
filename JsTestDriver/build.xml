@@ -397,6 +397,30 @@
 			</batchtest>
 		</junit>
 	</target>
+	
+	<target name="test-verbose" depends="compile-test, instrument">
+		<junit printsummary="withOutAndErr" haltonfailure="true" fork="true">
+			<classpath>
+				<pathelement location="${emma-bin.dir}" />
+			</classpath>
+			<classpath refid="emma" />
+			<classpath refid="classpath" />
+			<classpath refid="classpath-test" />
+			<classpath>
+				<pathelement location="${obj-debug.dir}" />
+				<pathelement location="${obj-test.dir}" />
+			</classpath>
+			<jvmarg value="-Demma.coverage.out.file=${emma.dir}/test.emma" />
+			<jvmarg value="-Demma.coverage.out.merge=true" />
+			<formatter type="xml" usefile="true" />
+			<batchtest fork="true" haltonfailure="true" todir="${junit.reports.dir}">
+				<fileset dir="${src-test.dir}">
+				    <!-- TODO Replace file path for unit tests targeting using name -->
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
 
 	<target name="coverage" depends="test">
 		<emma>
